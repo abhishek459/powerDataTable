@@ -1,3 +1,26 @@
 <template>
-
+    <table>
+        <thead>
+            <tr>
+                <template for:each={recordsWrapper.headers} for:item="header" for:index="index">
+                    <th key={header.path}>
+                        <a href="#">
+                            {header.label}
+                        </a>
+                    </th>
+                </template>
+            </tr>
+        </thead>
+        <tbody>
+            <template for:each={recordsWrapper.records} for:item="record" for:index="index">
+                <tr key={record.recordId}>
+                    <template for:each={record.fieldValues} for:item="field">
+                        <td key={field.path}>
+                            {field.value}
+                        </td>
+                    </template>
+                </tr>
+            </template>
+        </tbody>
+    </table>
 </template>
