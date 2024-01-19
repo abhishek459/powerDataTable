@@ -32,7 +32,6 @@ export default class PowerDataTable extends LightningElement {
     fetchRecordsOfFieldSet() {
         this.loading = true;
         fetchRecords({ objectName: 'Account', fieldSetName: 'Account_FieldSet' }).then(response => {
-            console.log(response);
             this.recordsWrapper = response;
         }).catch(error => {
             console.error(error);
@@ -48,6 +47,27 @@ export default class PowerDataTable extends LightningElement {
         window.addEventListener("offline", function () {
             this.connectedToInternet = false;
         });
-        this.fetchRecordsOfFieldSet();
+    }
+
+    enableInlineEdit(event) {
+        const recordIndex = event.currentTarget.dataset.recordIndex;
+        const fieldIndex = event.currentTarget.dataset.fieldIndex;
+        const recordId = event.currentTarget.dataset.recordId;
+
+        console.log(recordIndex, fieldIndex, recordId);
+
+        this.recordsWrapper.records[recordIndex].fieldValues[fieldIndex].editing = true;
+    }
+
+    disableInlineEdit(event) {
+        const recordIndex = event.currentTarget.dataset.recordIndex;
+        const fieldIndex = event.currentTarget.dataset.fieldIndex;
+        // const recordId = event.currentTarget.dataset.recordId;
+
+        this.recordsWrapper.records[recordIndex].fieldValues[fieldIndex].editing = false;
+    }
+
+    fetchFocus(event) {
+        event.target.focus();
     }
 }

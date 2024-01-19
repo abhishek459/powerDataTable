@@ -1,0 +1,9 @@
+td .inline-edit-button {
+    opacity: 0;
+    /* Initially hide the button */
+}
+
+td:hover .inline-edit-button {
+    opacity: 1;
+    /* Show the button on hover */
+}

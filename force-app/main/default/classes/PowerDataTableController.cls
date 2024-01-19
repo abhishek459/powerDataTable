@@ -7,11 +7,11 @@ public with sharing class PowerDataTableController {
         @AuraEnabled public Boolean required { get; set; }
 
         public HeaderWrapper(String path, String label, String type, Object value, Boolean required) {
-            this.path = path;
-            this.label = label;
-            this.type = type;
-            this.value = value;
-            this.required = required;
+            this.path = path; // Field API name of this field in Salesforce
+            this.label = label; // Label of this field in Salesforce
+            this.type = type; // Data type of this field value
+            this.value = value; // Value attribute stored for this field in record
+            this.required = required; // Whether this field is required in Salesforce
         }
     }
 
@@ -70,8 +70,6 @@ public with sharing class PowerDataTableController {
                 DataWrapper recordData = new DataWrapper(String.valueOf(record.get('Id')), fieldWrappers);
                 myRecordWrapper.records.add(recordData);
             }
-
-            System.debug(myRecordWrapper);
             return myRecordWrapper;
         } catch (Exception e) {
             throw e;
