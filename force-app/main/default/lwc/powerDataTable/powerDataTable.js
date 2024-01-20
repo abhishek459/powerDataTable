@@ -1,6 +1,12 @@
 import { LightningElement, api, track } from 'lwc';
 import fetchRecords from "@salesforce/apex/PowerDataTableController.fetchRecords";
 
+const dataTypeMapping = {
+    'STRING': 'text',
+    'DATETIME': 'datetime',
+    'CURRENCY': 'currency'
+}
+
 export default class PowerDataTable extends LightningElement {
     _fieldSetName;
     @api get fieldsetName() {
@@ -25,28 +31,35 @@ export default class PowerDataTable extends LightningElement {
             this.fetchRecordsOfFieldSet();
         }
     }
-    connectedToInternet = true;
+
+    // connectedToInternet = true;
 
     loading = false;
     @track recordsWrapper = {};
+    picklistOptions = {};
     fetchRecordsOfFieldSet() {
+        if (!this.objectName || !this.fieldsetName) {
+            return;
+        }
         this.loading = true;
         fetchRecords({ objectName: 'Account', fieldSetName: 'Account_FieldSet' }).then(response => {
             this.recordsWrapper = response;
+            this.picklistOptions = this.recordsWrapper.picklistOptions;
+            console.log(this.recordsWrapper);
         }).catch(error => {
             console.error(error);
         })
     }
 
     connectedCallback() {
-        window.addEventListener("online", function () {
-            this.connectedToInternet = true;
-            // Use navigator.onLine
-        });
+        // window.addEventListener("online", function () {
+        //     this.connectedToInternet = true;
+        //     // Use navigator.onLine
+        // });
 
-        window.addEventListener("offline", function () {
-            this.connectedToInternet = false;
-        });
+        // window.addEventListener("offline", function () {
+        //     this.connectedToInternet = false;
+        // });
     }
 
     enableInlineEdit(event) {
@@ -54,30 +67,18 @@ export default class PowerDataTable extends LightningElement {
         const fieldIndex = event.currentTarget.dataset.fieldIndex;
         // const recordId = event.currentTarget.dataset.recordId;
         const fieldType = event.currentTarget.dataset.fieldType;
-        switch (fieldType) {
-            case 'STRING':
-                this.recordsWrapper.records[recordIndex].fieldValues[fieldIndex].inputType = 'text';
-                break;
-            case 'CURRENCY':
-                this.recordsWrapper.records[recordIndex].fieldValues[fieldIndex].inputType = 'number';
-                break;
-            case 'DATETIME':
-                this.recordsWrapper.records[recordIndex].fieldValues[fieldIndex].inputType = 'datetime';
-                break;
-            default:
-                break;
-        }
-        console.log(fieldType);
-
-        this.recordsWrapper.records[recordIndex].fieldValues[fieldIndex].editing = true;
+        const recordCell = this.recordsWrapper.records[recordIndex].fieldValues[fieldIndex];
+        recordCell.inputType = dataTypeMapping[fieldType];
+        recordCell.picklistOptions = this.picklistOptions[recordCell.path];
+        recordCell.editing = true;
     }
 
     disableInlineEdit(event) {
         const recordIndex = event.currentTarget.dataset.recordIndex;
         const fieldIndex = event.currentTarget.dataset.fieldIndex;
         // const recordId = event.currentTarget.dataset.recordId;
-
-        this.recordsWrapper.records[recordIndex].fieldValues[fieldIndex].editing = false;
+        const recordCell = this.recordsWrapper.records[recordIndex].fieldValues[fieldIndex];
+        recordCell.editing = false;
     }
 
     fetchFocus(event) {

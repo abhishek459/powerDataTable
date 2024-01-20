@@ -1,9 +1,9 @@
 <template>
-    <div style="overflow-y: auto;">
+    <div style="overflow-x: auto;">
         <table class="slds-table slds-table_bordered slds-no-cell-focus slds-table_edit">
             <thead>
                 <tr>
-                    <template for:each={recordsWrapper.headers} for:item="header" for:index="index">
+                    <template for:each={recordsWrapper.sObjectFieldMetadataList} for:item="header" for:index="index">
                         <th key={header.path}>
                             <a class="slds-th__action slds-text-link_reset" role="button" tabindex={index}
                                 onclick={sortByColumn} data-field-path={header.path}>
@@ -22,7 +22,9 @@
                 <template for:each={recordsWrapper.records} for:item="record" for:index="recordIndex">
                     <tr key={record.recordId}>
                         <template for:each={record.fieldValues} for:item="field" for:index="fieldIndex">
-                            <td class="slds-cell-edit" role="gridcell" key={field.path}>
+                            <td class="slds-cell-edit" role="gridcell" key={field.path} data-record-index={recordIndex}
+                                data-field-index={fieldIndex} data-record-id={record.recordId}
+                                data-field-type={field.type} ondblclick={enableInlineEdit}>
                                 <span class="slds-grid slds-grid_align-spread">
                                     <span class="slds-truncate" title={field.value}>{field.value}</span>
                                     <lightning-button-icon
@@ -37,11 +39,21 @@
                                     <section class="slds-popover" role="dialog"
                                         style="position:absolute;top:0;left:0.0625rem">
                                         <div class="slds-popover__body">
-                                            <lightning-input required={field.required} type={field.inputType}
-                                                onmouseenter={fetchFocus} value={field.value}
-                                                data-record-index={recordIndex} data-field-index={fieldIndex}
-                                                data-record-id={record.recordId} onblur={disableInlineEdit}
-                                                variant="label-hidden"></lightning-input>
+                                            <template lwc:if={field.isPicklist}>
+                                                <lightning-combobox variant="label-hidden" value={field.value}
+                                                    options={field.picklistOptions} onmouseenter={fetchFocus}
+                                                    data-record-index={recordIndex} data-field-index={fieldIndex}
+                                                    data-record-id={record.recordId} required={field.required}
+                                                    onblur={disableInlineEdit}>
+                                                </lightning-combobox>
+                                            </template>
+                                            <template lwc:else>
+                                                <lightning-input required={field.required} type={field.inputType}
+                                                    onmouseenter={fetchFocus} onblur={disableInlineEdit}
+                                                    value={field.value} data-record-index={recordIndex}
+                                                    data-field-index={fieldIndex} data-record-id={record.recordId}
+                                                    variant="label-hidden"></lightning-input>
+                                            </template>
                                         </div>
                                     </section>
                                 </template>
@@ -51,5 +63,27 @@
                 </template>
             </tbody>
         </table>
+        <template if:true={unsavedChanges}>
+            <div class="footer slds-docked-form-footer slds-is-absolute forceListViewManagerGridFooter"
+                data-aura-rendered-by="546:0" data-aura-class="forceListViewManagerGridFooter">
+                <div class="slds-grid slds-grid--align-center" data-aura-rendered-by="547:0">
+                    <div data-aura-rendered-by="550:0" class="forceStatusIcon" data-aura-class="forceStatusIcon">
+
+                    </div>
+                    <button aria-live="off" type="button"
+                        class="slds-button slds-button--neutral test-cancelButton uiButton--default uiButton--neutral uiButton"
+                        aria-label="" data-aura-rendered-by="565:0"
+                        data-aura-class="uiButton--default uiButton--neutral uiButton">
+                        <span dir="ltr" class=" label bBody" data-aura-rendered-by="568:0">Cancel</span>
+                    </button>
+                    <button aria-live="off" type="button"
+                        class="slds-button slds-button--neutral test-saveButton uiButton--default uiButton--brand uiButton"
+                        aria-label="" data-aura-rendered-by="573:0"
+                        data-aura-class="uiButton--default uiButton--brand uiButton">
+                        <span dir="ltr" class=" label bBody" data-aura-rendered-by="576:0">Save</span>
+                    </button>
+                </div>
+            </div>
+        </template>
     </div>
 </template>
