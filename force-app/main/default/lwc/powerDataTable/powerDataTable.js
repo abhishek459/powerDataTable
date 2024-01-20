@@ -52,9 +52,22 @@ export default class PowerDataTable extends LightningElement {
     enableInlineEdit(event) {
         const recordIndex = event.currentTarget.dataset.recordIndex;
         const fieldIndex = event.currentTarget.dataset.fieldIndex;
-        const recordId = event.currentTarget.dataset.recordId;
-
-        console.log(recordIndex, fieldIndex, recordId);
+        // const recordId = event.currentTarget.dataset.recordId;
+        const fieldType = event.currentTarget.dataset.fieldType;
+        switch (fieldType) {
+            case 'STRING':
+                this.recordsWrapper.records[recordIndex].fieldValues[fieldIndex].inputType = 'text';
+                break;
+            case 'CURRENCY':
+                this.recordsWrapper.records[recordIndex].fieldValues[fieldIndex].inputType = 'number';
+                break;
+            case 'DATETIME':
+                this.recordsWrapper.records[recordIndex].fieldValues[fieldIndex].inputType = 'datetime';
+                break;
+            default:
+                break;
+        }
+        console.log(fieldType);
 
         this.recordsWrapper.records[recordIndex].fieldValues[fieldIndex].editing = true;
     }
@@ -69,5 +82,10 @@ export default class PowerDataTable extends LightningElement {
 
     fetchFocus(event) {
         event.target.focus();
+    }
+
+    sortByColumn(event) {
+        const fieldPath = event.currentTarget.dataset.fieldPath;
+        console.log(fieldPath);
     }
 }

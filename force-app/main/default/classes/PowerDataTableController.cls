@@ -64,7 +64,7 @@ public with sharing class PowerDataTableController {
                 List<HeaderWrapper> fieldWrappers = new List<HeaderWrapper>();
                 Map<String, Object> fieldValues = record.getPopulatedFieldsAsMap();
                 for (HeaderWrapper header : headers) {
-                    HeaderWrapper newHeader = new HeaderWrapper(header.path, header.label, header.type, fieldValues.get(header.path), header.required);
+                    HeaderWrapper newHeader = new HeaderWrapper(header.path, header.label, header.type, fieldValues.get(header.path) == null ? '' : fieldValues.get(header.path), header.required);
                     fieldWrappers.add(newHeader);
                 }
                 DataWrapper recordData = new DataWrapper(String.valueOf(record.get('Id')), fieldWrappers);

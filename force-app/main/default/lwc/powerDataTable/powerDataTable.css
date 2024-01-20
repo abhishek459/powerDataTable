@@ -7,3 +7,13 @@ td:hover .inline-edit-button {
     opacity: 1;
     /* Show the button on hover */
 }
+
+th .sort-icon {
+    opacity: 0;
+    /* Initially hide the icon */
+}
+
+th:hover .sort-icon {
+    opacity: 1;
+    /* Show the icon on hover */
+}

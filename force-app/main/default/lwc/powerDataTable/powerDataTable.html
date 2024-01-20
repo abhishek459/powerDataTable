@@ -1,55 +1,55 @@
 <template>
-    <table class="slds-table slds-table_bordered slds-no-cell-focus slds-table_edit">
-        <thead>
-            <tr>
-                <template for:each={recordsWrapper.headers} for:item="header" for:index="index">
-                    <th key={header.path}>
-                        <a href="#">
-                            {header.label}
-                        </a>
-                    </th>
-                </template>
-            </tr>
-        </thead>
-        <tbody>
-            <template for:each={recordsWrapper.records} for:item="record" for:index="recordIndex">
-                <tr key={record.recordId}>
-                    <template for:each={record.fieldValues} for:item="field" for:index="fieldIndex">
-                        <td class="slds-cell-edit" role="gridcell" key={field.path}>
-                            <span class="slds-grid slds-grid_align-spread">
-                                <span class="slds-truncate" title={field.value}>{field.value}</span>
-                                <lightning-button-icon
-                                    class="inline-edit-button slds-cell-edit__button slds-m-left_x-small"
-                                    icon-name="utility:edit" variant="bare" data-record-index={recordIndex}
-                                    data-field-index={fieldIndex} data-record-id={record.recordId}
-                                    onmousedown={enableInlineEdit}>
-                                </lightning-button-icon>
-                            </span>
-
-                            <template lwc:if={field.editing}>
-                                <section class="slds-popover slds-popover slds-popover_edit" role="dialog"
-                                    style="position:absolute;top:0;left:0.0625rem">
-                                    <div class="slds-popover__body">
-                                        <div class="slds-media">
-                                            <div class="slds-media__body">
-                                                <div class="slds-form-element slds-grid slds-wrap">
-                                                    <div class="slds-form-element__control slds-grow">
-                                                        <input onmouseenter={fetchFocus} class="slds-input"
-                                                            value={field.value} data-record-index={recordIndex}
-                                                            data-field-index={fieldIndex}
-                                                            data-record-id={record.recordId}
-                                                            onblur={disableInlineEdit}></input>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </section>
-                            </template>
-                        </td>
+    <div style="overflow-y: auto;">
+        <table class="slds-table slds-table_bordered slds-no-cell-focus slds-table_edit">
+            <thead>
+                <tr>
+                    <template for:each={recordsWrapper.headers} for:item="header" for:index="index">
+                        <th key={header.path}>
+                            <a class="slds-th__action slds-text-link_reset" role="button" tabindex={index}
+                                onclick={sortByColumn} data-field-path={header.path}>
+                                <span class="slds-assistive-text">Sort by: </span>
+                                <span class="slds-truncate" title={header.label}>{header.label}</span>
+                                <span class="slds-icon_container">
+                                    <lightning-icon class="sort-icon" size="xx-small"
+                                        icon-name="utility:arrowup"></lightning-icon>
+                                </span>
+                            </a>
+                        </th>
                     </template>
                 </tr>
-            </template>
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                <template for:each={recordsWrapper.records} for:item="record" for:index="recordIndex">
+                    <tr key={record.recordId}>
+                        <template for:each={record.fieldValues} for:item="field" for:index="fieldIndex">
+                            <td class="slds-cell-edit" role="gridcell" key={field.path}>
+                                <span class="slds-grid slds-grid_align-spread">
+                                    <span class="slds-truncate" title={field.value}>{field.value}</span>
+                                    <lightning-button-icon
+                                        class="inline-edit-button slds-cell-edit__button slds-m-left_x-small"
+                                        icon-name="utility:edit" variant="bare" data-record-index={recordIndex}
+                                        data-field-index={fieldIndex} data-record-id={record.recordId}
+                                        data-field-type={field.type} onmousedown={enableInlineEdit}>
+                                    </lightning-button-icon>
+                                </span>
+
+                                <template lwc:if={field.editing}>
+                                    <section class="slds-popover" role="dialog"
+                                        style="position:absolute;top:0;left:0.0625rem">
+                                        <div class="slds-popover__body">
+                                            <lightning-input required={field.required} type={field.inputType}
+                                                onmouseenter={fetchFocus} value={field.value}
+                                                data-record-index={recordIndex} data-field-index={fieldIndex}
+                                                data-record-id={record.recordId} onblur={disableInlineEdit}
+                                                variant="label-hidden"></lightning-input>
+                                        </div>
+                                    </section>
+                                </template>
+                            </td>
+                        </template>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+    </div>
 </template>
