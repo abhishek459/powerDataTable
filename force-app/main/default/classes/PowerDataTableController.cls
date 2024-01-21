@@ -79,7 +79,7 @@ public with sharing class PowerDataTableController {
                 if (fieldMetada.type == PICKLIST_TYPE) {
                     picklistOptions.put(fieldMetada.path, new List<Map<String, String>>());
                     List<Schema.PicklistEntry> picklistValues = Schema.getGlobalDescribe().get(objectName).getDescribe().fields.getMap().get(fieldMetada.path).getDescribe().getPicklistValues();
-                    
+                    picklistOptions.get(fieldMetada.path).add(new Map<String, String>{'label'=>'--None--', 'value'=>''});
                     for(Schema.PicklistEntry pickListVal : picklistValues) {
                         picklistOptions.get(fieldMetada.path).add(new Map<String, String>{'label'=>pickListVal.getLabel(), 'value'=>pickListVal.getValue()});
                     }

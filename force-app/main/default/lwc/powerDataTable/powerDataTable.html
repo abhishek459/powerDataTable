@@ -23,15 +23,15 @@
                     <tr key={record.recordId}>
                         <template for:each={record.fieldValues} for:item="field" for:index="fieldIndex">
                             <td class="slds-cell-edit" role="gridcell" key={field.path} data-record-index={recordIndex}
-                                data-field-index={fieldIndex} data-record-id={record.recordId}
-                                data-field-type={field.type} ondblclick={enableInlineEdit}>
+                                data-field-index={fieldIndex} data-field-type={field.type}
+                                ondblclick={enableInlineEdit}>
                                 <span class="slds-grid slds-grid_align-spread">
                                     <span class="slds-truncate" title={field.value}>{field.value}</span>
                                     <lightning-button-icon
                                         class="inline-edit-button slds-cell-edit__button slds-m-left_x-small"
                                         icon-name="utility:edit" variant="bare" data-record-index={recordIndex}
-                                        data-field-index={fieldIndex} data-record-id={record.recordId}
-                                        data-field-type={field.type} onmousedown={enableInlineEdit}>
+                                        data-field-index={fieldIndex} data-field-type={field.type}
+                                        onmousedown={enableInlineEdit}>
                                     </lightning-button-icon>
                                 </span>
 
@@ -43,15 +43,14 @@
                                                 <lightning-combobox variant="label-hidden" value={field.value}
                                                     options={field.picklistOptions} onmouseenter={fetchFocus}
                                                     data-record-index={recordIndex} data-field-index={fieldIndex}
-                                                    data-record-id={record.recordId} required={field.required}
-                                                    onblur={disableInlineEdit}>
+                                                    required={field.required} onblur={disableInlineEdit}>
                                                 </lightning-combobox>
                                             </template>
                                             <template lwc:else>
                                                 <lightning-input required={field.required} type={field.inputType}
                                                     onmouseenter={fetchFocus} onblur={disableInlineEdit}
                                                     value={field.value} data-record-index={recordIndex}
-                                                    data-field-index={fieldIndex} data-record-id={record.recordId}
+                                                    data-field-index={fieldIndex}
                                                     variant="label-hidden"></lightning-input>
                                             </template>
                                         </div>
@@ -64,23 +63,15 @@
             </tbody>
         </table>
         <template if:true={unsavedChanges}>
-            <div class="footer slds-docked-form-footer slds-is-absolute forceListViewManagerGridFooter"
-                data-aura-rendered-by="546:0" data-aura-class="forceListViewManagerGridFooter">
-                <div class="slds-grid slds-grid--align-center" data-aura-rendered-by="547:0">
-                    <div data-aura-rendered-by="550:0" class="forceStatusIcon" data-aura-class="forceStatusIcon">
-
-                    </div>
+            <div class="footer">
+                <div class="slds-grid slds-grid--align-center">
                     <button aria-live="off" type="button"
-                        class="slds-button slds-button--neutral test-cancelButton uiButton--default uiButton--neutral uiButton"
-                        aria-label="" data-aura-rendered-by="565:0"
-                        data-aura-class="uiButton--default uiButton--neutral uiButton">
-                        <span dir="ltr" class=" label bBody" data-aura-rendered-by="568:0">Cancel</span>
+                        class="slds-button slds-button--neutral uiButton--default uiButton--neutral uiButton">
+                        <span>Cancel</span>
                     </button>
                     <button aria-live="off" type="button"
-                        class="slds-button slds-button--neutral test-saveButton uiButton--default uiButton--brand uiButton"
-                        aria-label="" data-aura-rendered-by="573:0"
-                        data-aura-class="uiButton--default uiButton--brand uiButton">
-                        <span dir="ltr" class=" label bBody" data-aura-rendered-by="576:0">Save</span>
+                        class="slds-button slds-button--neutral uiButton--default uiButton--brand uiButton">
+                        <span>Save</span>
                     </button>
                 </div>
             </div>

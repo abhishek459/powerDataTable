@@ -37,6 +37,23 @@ export default class PowerDataTable extends LightningElement {
     loading = false;
     @track recordsWrapper = {};
     picklistOptions = {};
+    @track trackedChanges = {};
+
+    get unsavedChanges() {
+        return Object.keys(this.trackedChanges)?.length > 0;
+    }
+
+    connectedCallback() {
+        // window.addEventListener("online", function () {
+        //     this.connectedToInternet = true;
+        //     // Use navigator.onLine
+        // });
+
+        // window.addEventListener("offline", function () {
+        //     this.connectedToInternet = false;
+        // });
+    }
+
     fetchRecordsOfFieldSet() {
         if (!this.objectName || !this.fieldsetName) {
             return;
@@ -51,34 +68,46 @@ export default class PowerDataTable extends LightningElement {
         })
     }
 
-    connectedCallback() {
-        // window.addEventListener("online", function () {
-        //     this.connectedToInternet = true;
-        //     // Use navigator.onLine
-        // });
-
-        // window.addEventListener("offline", function () {
-        //     this.connectedToInternet = false;
-        // });
-    }
-
     enableInlineEdit(event) {
         const recordIndex = event.currentTarget.dataset.recordIndex;
         const fieldIndex = event.currentTarget.dataset.fieldIndex;
         // const recordId = event.currentTarget.dataset.recordId;
         const fieldType = event.currentTarget.dataset.fieldType;
-        const recordCell = this.recordsWrapper.records[recordIndex].fieldValues[fieldIndex];
-        recordCell.inputType = dataTypeMapping[fieldType];
-        recordCell.picklistOptions = this.picklistOptions[recordCell.path];
-        recordCell.editing = true;
+        const recordData = this.recordsWrapper.records[recordIndex].fieldValues[fieldIndex];
+        recordData.inputType = dataTypeMapping[fieldType];
+        recordData.picklistOptions = this.picklistOptions[recordData.path];
+        recordData.editing = true;
     }
 
     disableInlineEdit(event) {
-        const recordIndex = event.currentTarget.dataset.recordIndex;
-        const fieldIndex = event.currentTarget.dataset.fieldIndex;
-        // const recordId = event.currentTarget.dataset.recordId;
-        const recordCell = this.recordsWrapper.records[recordIndex].fieldValues[fieldIndex];
-        recordCell.editing = false;
+        try {
+            const recordIndex = event.currentTarget.dataset.recordIndex;
+            const fieldIndex = event.currentTarget.dataset.fieldIndex;
+            const recordId = this.recordsWrapper.records[recordIndex].recordId;
+            const value = event.target.value;
+
+            const recordFieldData = this.recordsWrapper.records[recordIndex].fieldValues[fieldIndex];
+            recordFieldData.originalValue = recordFieldData.originalValue || recordFieldData.value;
+            recordFieldData.value = value;
+            this.updateTrackedChanges(recordFieldData, recordId);
+            recordFieldData.editing = false;
+            console.log(JSON.stringify(this.trackedChanges));
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    updateTrackedChanges(recordFieldData, recordId) {
+        if (!recordFieldData.value || recordFieldData.originalValue === recordFieldData.value) {
+            this.trackedChanges[recordId] = this.trackedChanges[recordId] || {};
+            delete this.trackedChanges[recordId][recordFieldData.path];
+            if (Object.keys(this.trackedChanges[recordId]).length === 0) {
+                delete this.trackedChanges[recordId];
+            }
+        } else {
+            this.trackedChanges[recordId] = this.trackedChanges[recordId] || {};
+            this.trackedChanges[recordId][recordFieldData.path] = recordFieldData.value;
+        }
     }
 
     fetchFocus(event) {

@@ -17,3 +17,14 @@ th:hover .sort-icon {
     opacity: 1;
     /* Show the icon on hover */
 }
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    z-index: 10;
+    width: 100%;
+    background-color: #f3f3f3;
+    padding-top: 1%;
+    padding-bottom: 1%;
+}
