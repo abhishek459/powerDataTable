@@ -121,9 +121,9 @@ export default class PowerDataTable extends LightningElement {
     }
 
     discardChanges() {
-        Object.keys(this.trackedChanges).forEach(recordId => {
+        Object.keys(this.trackedChanges)?.forEach(recordId => {
             const recordFields = this.trackedChanges[recordId];
-            Object.keys(recordFields).forEach(fieldAPI => {
+            Object.keys(recordFields)?.forEach(fieldAPI => {
                 const recordIndex = this.trackedChanges[recordId][fieldAPI].recordIndex;
                 const fieldIndex = this.trackedChanges[recordId][fieldAPI].fieldIndex;
                 const recordFieldData = this.recordsWrapper.records[recordIndex].fieldValues[fieldIndex];
