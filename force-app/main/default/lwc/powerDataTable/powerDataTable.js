@@ -7,6 +7,8 @@ const dataTypeMapping = {
     'CURRENCY': 'currency'
 }
 
+const isEditedClass = 'slds-is-edited';
+
 export default class PowerDataTable extends LightningElement {
     _fieldSetName;
     @api get fieldsetName() {
@@ -89,7 +91,7 @@ export default class PowerDataTable extends LightningElement {
             const recordFieldData = this.recordsWrapper.records[recordIndex].fieldValues[fieldIndex];
             recordFieldData.originalValue = recordFieldData.originalValue || recordFieldData.value;
             recordFieldData.value = value;
-            this.updateTrackedChanges(recordFieldData, recordId);
+            this.updateTrackedChanges(recordIndex, fieldIndex, recordId);
             recordFieldData.editing = false;
             console.log(JSON.stringify(this.trackedChanges));
         } catch (error) {
@@ -97,17 +99,40 @@ export default class PowerDataTable extends LightningElement {
         }
     }
 
-    updateTrackedChanges(recordFieldData, recordId) {
-        if (!recordFieldData.value || recordFieldData.originalValue === recordFieldData.value) {
+    updateTrackedChanges(recordIndex, fieldIndex, recordId) {
+        const recordFieldData = this.recordsWrapper.records[recordIndex].fieldValues[fieldIndex];
+        const domElement = this.template.querySelector(`td[data-record-index="${recordIndex}"][data-field-index="${fieldIndex}"]`);
+        if (!recordFieldData.value || recordFieldData.originalValue == recordFieldData.value) { // Double Equal to comparison operator because we dont want to type check at this point.
             this.trackedChanges[recordId] = this.trackedChanges[recordId] || {};
             delete this.trackedChanges[recordId][recordFieldData.path];
             if (Object.keys(this.trackedChanges[recordId]).length === 0) {
                 delete this.trackedChanges[recordId];
             }
+            domElement?.classList.remove(isEditedClass);
         } else {
             this.trackedChanges[recordId] = this.trackedChanges[recordId] || {};
-            this.trackedChanges[recordId][recordFieldData.path] = recordFieldData.value;
+            this.trackedChanges[recordId][recordFieldData.path] = {
+                value: recordFieldData.value,
+                recordIndex: recordIndex,
+                fieldIndex: fieldIndex
+            };
+            domElement?.classList.add(isEditedClass);
         }
+    }
+
+    discardChanges() {
+        Object.keys(this.trackedChanges).forEach(recordId => {
+            const recordFields = this.trackedChanges[recordId];
+            Object.keys(recordFields).forEach(fieldAPI => {
+                const recordIndex = this.trackedChanges[recordId][fieldAPI].recordIndex;
+                const fieldIndex = this.trackedChanges[recordId][fieldAPI].fieldIndex;
+                const recordFieldData = this.recordsWrapper.records[recordIndex].fieldValues[fieldIndex];
+                recordFieldData.value = recordFieldData.originalValue;
+                const domElement = this.template.querySelector(`td[data-record-index="${recordIndex}"][data-field-index="${fieldIndex}"]`);
+                domElement.classList.remove(isEditedClass);
+            });
+        });
+        this.trackedChanges = {};
     }
 
     fetchFocus(event) {
