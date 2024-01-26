@@ -43,9 +43,9 @@ public with sharing class PowerDataTableController {
             List<Schema.FieldSetMember> fields = fieldSet.getFields();
 
             String queryString = createQueryString(fields, objectName);
-            
+
             List<sObject> records = Database.Query(queryString);
-            
+
             RecordWrapper myRecordWrapper = new RecordWrapper();
             myRecordWrapper.sObjectFieldMetadataList = createSObjectMetadataList(fields);
             myRecordWrapper.records = getRecordsWithFieldWrapper(records, myRecordWrapper.sObjectFieldMetadataList);

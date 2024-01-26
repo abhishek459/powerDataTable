@@ -102,7 +102,7 @@ export default class PowerDataTable extends LightningElement {
     updateTrackedChanges(recordIndex, fieldIndex, recordId) {
         const recordFieldData = this.recordsWrapper.records[recordIndex].fieldValues[fieldIndex];
         const domElement = this.template.querySelector(`td[data-record-index="${recordIndex}"][data-field-index="${fieldIndex}"]`);
-        if (!recordFieldData.value || recordFieldData.originalValue == recordFieldData.value) { // Double Equal to comparison operator because we dont want to type check at this point.
+        if (recordFieldData.originalValue == recordFieldData.value) { // Double Equal to comparison operator because we dont want to type check at this point.
             this.trackedChanges[recordId] = this.trackedChanges[recordId] || {};
             delete this.trackedChanges[recordId][recordFieldData.path];
             if (Object.keys(this.trackedChanges[recordId]).length === 0) {
