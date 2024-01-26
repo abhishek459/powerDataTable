@@ -20,10 +20,12 @@ public with sharing class PowerDataTableController {
     public class DataWrapper {
         @AuraEnabled public String recordId { get; set; }
         @AuraEnabled public List<FieldMetadataWrapper> fieldValues { get; set; }
+        @AuraEnabled public Integer srNo { get; set; }
         
-        public DataWrapper(String recordId, List<FieldMetadataWrapper> fieldValues) {
+        public DataWrapper(String recordId, List<FieldMetadataWrapper> fieldValues, Integer srNo) {
             this.recordId = recordId;
             this.fieldValues = fieldValues;
+            this.srNo = srNo;
         }
     }
 
@@ -81,6 +83,7 @@ public with sharing class PowerDataTableController {
 
     public static List<DataWrapper> getRecordsWithFieldWrapper(List<sObject> records, List<FieldMetadataWrapper> sObjectFieldMetadataList) {
         List<DataWrapper> recordsWrapper = new List<DataWrapper>();
+        Integer counter = 1;
         for (sObject record : records) {
             List<FieldMetadataWrapper> fieldWrappers = new List<FieldMetadataWrapper>();
             Map<String, Object> fieldValues = record.getPopulatedFieldsAsMap();
@@ -90,8 +93,9 @@ public with sharing class PowerDataTableController {
                 fieldData.isPicklist = fieldData.type == PICKLIST_TYPE ? true : false;
                 fieldWrappers.add(fieldData);
             }
-            DataWrapper recordData = new DataWrapper(String.valueOf(record.get('Id')), fieldWrappers);
+            DataWrapper recordData = new DataWrapper(String.valueOf(record.get('Id')), fieldWrappers, counter);
             recordsWrapper.add(recordData);
+            counter += 1;
         }
         return recordsWrapper;
     }

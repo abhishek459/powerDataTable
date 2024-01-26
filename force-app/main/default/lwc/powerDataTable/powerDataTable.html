@@ -1,10 +1,11 @@
 <template>
     <div style="overflow-x: auto;">
-        <table class="slds-table slds-table_bordered slds-no-cell-focus slds-table_edit">
+        <table class="slds-table slds-table_bordered slds-no-cell-focus slds-table_edit slds-table_resizable-cols">
             <thead>
-                <tr>
+                <tr class="slds-line-height_reset">
+                    <th></th>
                     <template for:each={recordsWrapper.sObjectFieldMetadataList} for:item="header" for:index="index">
-                        <th key={header.path}>
+                        <th class="slds-is-resizable slds-cell_action-mode" key={header.path}>
                             <a class="slds-th__action slds-text-link_reset" role="button" tabindex={index}
                                 onclick={sortByColumn} data-field-path={header.path}>
                                 <span class="slds-assistive-text">Sort by: </span>
@@ -21,6 +22,7 @@
             <tbody>
                 <template for:each={recordsWrapper.records} for:item="record" for:index="recordIndex">
                     <tr key={record.recordId}>
+                        <td>{record.srNo}</td>
                         <template for:each={record.fieldValues} for:item="field" for:index="fieldIndex">
                             <td class="slds-cell-edit" role="gridcell" key={field.path} data-record-index={recordIndex}
                                 data-field-index={fieldIndex} data-field-type={field.type}
