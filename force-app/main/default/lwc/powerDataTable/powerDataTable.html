@@ -11,8 +11,22 @@
                                 <span class="slds-assistive-text">Sort by: </span>
                                 <span class="slds-truncate" title={header.label}>{header.label}</span>
                                 <span class="slds-icon_container">
-                                    <lightning-icon class="sort-icon" size="xx-small" icon-name="utility:arrowup">
-                                    </lightning-icon>
+                                    <template lwc:if={header.isSortedBy}>
+                                        <template lwc:if={header.ascending}>
+                                            <lightning-icon class="sorted-icon" size="xx-small"
+                                                icon-name="utility:arrowup">
+                                            </lightning-icon>
+                                        </template>
+                                        <template lwc:else>
+                                            <lightning-icon class="sorted-icon" size="xx-small"
+                                                icon-name="utility:arrowdown">
+                                            </lightning-icon>
+                                        </template>
+                                    </template>
+                                    <template lwc:else>
+                                        <lightning-icon class="sort-icon" size="xx-small" icon-name="utility:arrowup">
+                                        </lightning-icon>
+                                    </template>
                                 </span>
                             </a>
                         </th>

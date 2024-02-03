@@ -141,6 +141,15 @@ export default class PowerDataTable extends LightningElement {
 
     sortByColumn(event) {
         const fieldPath = event.currentTarget.dataset.fieldPath;
-        console.log(fieldPath);
+        this.recordsWrapper.sObjectFieldMetadataList.forEach(item => {
+            if (item.path === fieldPath) {
+                item.isSortedBy = true;
+                item.ascending = item.ascending ? !item.ascending : true;
+            } else {
+                item.isSortedBy = false;
+                item.ascending = undefined;
+            }
+        });
+        console.log(JSON.stringify(this.recordsWrapper.sObjectFieldMetadataList));
     }
 }

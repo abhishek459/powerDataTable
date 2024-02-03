@@ -28,3 +28,7 @@ th:hover .sort-icon {
     padding-top: 1%;
     padding-bottom: 1%;
 }
+
+.sorted-icon {
+    --slds-c-icon-color-foreground-default: #00a1e0;
+}

@@ -8,6 +8,8 @@ public with sharing class PowerDataTableController {
         @AuraEnabled public Object value { get; set; } // Value attribute stored for this field in record
         @AuraEnabled public Boolean required { get; set; } // Whether this field is required or not when saving
         @AuraEnabled public Boolean isPicklist { get; set; } // Whether this field is a picklist type
+        @AuraEnabled public Boolean isSortedBy { get; set; }
+        @AuraEnabled public Boolean ascending { get; set; }
 
         public FieldMetadataWrapper(String path, String label, String type, Boolean required) {
             this.path = path;
@@ -76,6 +78,12 @@ public with sharing class PowerDataTableController {
                 String.valueOf(fieldSetMember.getType()),
                 fieldSetMember.getDBRequired()
             );
+            if (header.path == 'CreatedDate') {
+                header.ascending = false;
+                header.isSortedBy = true;
+            } else {
+                header.isSortedBy = false;
+            }
             sObjectFieldMetadataList.add(header);
         }
         return sObjectFieldMetadataList;
