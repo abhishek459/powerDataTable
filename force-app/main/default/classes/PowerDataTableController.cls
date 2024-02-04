@@ -1,5 +1,6 @@
 public with sharing class PowerDataTableController {
     static final String PICKLIST_TYPE = String.valueOf(DisplayType.PICKLIST);
+    static final String DEFAULT_SORTED_FIELD = 'CreatedDate';
 
     public class FieldMetadataWrapper {
         @AuraEnabled public String path { get; set; } // Field API name of this field
@@ -8,8 +9,9 @@ public with sharing class PowerDataTableController {
         @AuraEnabled public Object value { get; set; } // Value attribute stored for this field in record
         @AuraEnabled public Boolean required { get; set; } // Whether this field is required or not when saving
         @AuraEnabled public Boolean isPicklist { get; set; } // Whether this field is a picklist type
-        @AuraEnabled public Boolean isSortedBy { get; set; }
-        @AuraEnabled public Boolean ascending { get; set; }
+        @AuraEnabled public Boolean isSortedBy { get; set; } // Whether is field is used for sorting
+        @AuraEnabled public Boolean ascending { get; set; } // Sorting order is ascending or descending
+        @AuraEnabled public String formattedValue { get; set; } // Formatted value in current locale
 
         public FieldMetadataWrapper(String path, String label, String type, Boolean required) {
             this.path = path;
@@ -78,15 +80,20 @@ public with sharing class PowerDataTableController {
                 String.valueOf(fieldSetMember.getType()),
                 fieldSetMember.getDBRequired()
             );
-            if (header.path == 'CreatedDate') {
-                header.ascending = false;
-                header.isSortedBy = true;
-            } else {
-                header.isSortedBy = false;
-            }
+            header = getDefaultSortedValue(header);
             sObjectFieldMetadataList.add(header);
         }
         return sObjectFieldMetadataList;
+    }
+
+    public static FieldMetadataWrapper getDefaultSortedValue(FieldMetadataWrapper header) {
+        if (header.path == DEFAULT_SORTED_FIELD) {
+            header.ascending = false;
+            header.isSortedBy = true;
+        } else {
+            header.isSortedBy = false;
+        }
+        return header;
     }
 
     public static List<DataWrapper> getRecordsWithFieldWrapper(List<sObject> records, List<FieldMetadataWrapper> sObjectFieldMetadataList) {
@@ -97,8 +104,9 @@ public with sharing class PowerDataTableController {
             Map<String, Object> fieldValues = record.getPopulatedFieldsAsMap();
             for (FieldMetadataWrapper header : sObjectFieldMetadataList) {
                 FieldMetadataWrapper fieldData = new FieldMetadataWrapper(header.path, header.label, header.type, header.required);
-                fieldData.value = fieldValues.get(header.path) == null ? '' : fieldValues.get(header.path);
+                fieldData.value = getValue(fieldValues.get(header.path));
                 fieldData.isPicklist = fieldData.type == PICKLIST_TYPE ? true : false;
+                fieldData.formattedValue = getFormattedValue(fieldData);
                 fieldWrappers.add(fieldData);
             }
             DataWrapper recordData = new DataWrapper(String.valueOf(record.get('Id')), fieldWrappers, counter);
@@ -106,6 +114,24 @@ public with sharing class PowerDataTableController {
             counter += 1;
         }
         return recordsWrapper;
+    }
+
+    public static Object getValue(Object obj) {
+        return obj == null ? '' : obj;
+    }
+
+    public static String getFormattedValue(FieldMetadataWrapper fieldData) {
+        switch on fieldData.type {
+            when 'CURRENCY', 'DECIMAL', 'INTEGER' {
+                return Decimal.valueOf(String.valueOf(fieldData.value)).format();
+            }
+            when 'DATETIME' {
+                return DateTime.valueOf(String.valueOf(fieldData.value)).format('dd-MMM-yy, hh:mm a');
+            }
+            when else {
+                return String.valueOf(fieldData.value);
+            }
+        }
     }
 
     public static Map<String, List<Map<String, String>>> createPicklistOptions(List<FieldMetadataWrapper> sObjectFieldMetadataList, String objectName) {
