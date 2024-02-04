@@ -9,6 +9,15 @@ const dataTypeMapping = {
 
 const isEditedClass = 'slds-is-edited';
 
+const dateTimeFormatter = new Intl.DateTimeFormat('en-IN', {
+    year: '2-digit',
+    month: 'short',
+    day: '2-digit',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
+});
+
 export default class PowerDataTable extends LightningElement {
     _fieldSetName;
     @api get fieldsetName() {
@@ -81,7 +90,7 @@ export default class PowerDataTable extends LightningElement {
         recordData.editing = true;
     }
 
-    disableInlineEdit(event) {
+    saveChangesAndDisableInlineEdit(event) {
         try {
             const recordIndex = event.currentTarget.dataset.recordIndex;
             const fieldIndex = event.currentTarget.dataset.fieldIndex;
@@ -91,11 +100,27 @@ export default class PowerDataTable extends LightningElement {
             const recordFieldData = this.recordsWrapper.records[recordIndex].fieldValues[fieldIndex];
             recordFieldData.originalValue = recordFieldData.originalValue || recordFieldData.value;
             recordFieldData.value = value;
+            recordFieldData.formattedValue = this.getFormattedValue(recordFieldData);
             this.updateTrackedChanges(recordIndex, fieldIndex, recordId);
             recordFieldData.editing = false;
             console.log(JSON.stringify(this.trackedChanges));
         } catch (error) {
             console.error(error);
+        }
+    }
+
+    getFormattedValue(recordFieldData) {
+        switch (recordFieldData.type) {
+            case 'DATETIME':
+                let value = dateTimeFormatter.format(new Date(recordFieldData.value));
+                value = value.slice(0, -2) + value.slice(-2).toUpperCase();
+                return value;
+            case 'CURRENCY':
+            case 'DECIMAL':
+            case 'INTEGER':
+                return Number(recordFieldData.value).toLocaleString();
+            default:
+                return recordFieldData.value;
         }
     }
 
@@ -128,6 +153,7 @@ export default class PowerDataTable extends LightningElement {
                 const fieldIndex = this.trackedChanges[recordId][fieldAPI].fieldIndex;
                 const recordFieldData = this.recordsWrapper.records[recordIndex].fieldValues[fieldIndex];
                 recordFieldData.value = recordFieldData.originalValue;
+                recordFieldData.formattedValue = this.getFormattedValue(recordFieldData);
                 const domElement = this.template.querySelector(`td[data-record-index="${recordIndex}"][data-field-index="${fieldIndex}"]`);
                 domElement.classList.remove(isEditedClass);
             });

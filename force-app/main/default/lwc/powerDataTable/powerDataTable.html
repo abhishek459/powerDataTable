@@ -59,12 +59,12 @@
                                                 <lightning-combobox variant="label-hidden" value={field.value}
                                                     options={field.picklistOptions} onmouseenter={fetchFocus}
                                                     data-record-index={recordIndex} data-field-index={fieldIndex}
-                                                    required={field.required} onblur={disableInlineEdit}>
+                                                    required={field.required} onblur={saveChangesAndDisableInlineEdit}>
                                                 </lightning-combobox>
                                             </template>
                                             <template lwc:else>
                                                 <lightning-input required={field.required} type={field.inputType}
-                                                    onmouseenter={fetchFocus} onblur={disableInlineEdit}
+                                                    onmouseenter={fetchFocus} onblur={saveChangesAndDisableInlineEdit}
                                                     value={field.value} data-record-index={recordIndex}
                                                     data-field-index={fieldIndex}
                                                     variant="label-hidden"></lightning-input>
