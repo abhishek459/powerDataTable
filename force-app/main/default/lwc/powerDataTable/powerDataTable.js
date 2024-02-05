@@ -1,5 +1,6 @@
 import { LightningElement, api, track } from 'lwc';
 import fetchRecords from "@salesforce/apex/PowerDataTableController.fetchRecords";
+import getRecordsFromQuery from "@salesforce/apex/PowerDataTableController.getRecordsFromQuery";
 
 const dataTypeMapping = {
     'STRING': 'text',
@@ -72,6 +73,7 @@ export default class PowerDataTable extends LightningElement {
         this.loading = true;
         fetchRecords({ objectName: 'Account', fieldSetName: 'Account_FieldSet' }).then(response => {
             this.recordsWrapper = response;
+            console.log(response);
             this.picklistOptions = this.recordsWrapper.picklistOptions;
             console.log(this.recordsWrapper);
         }).catch(error => {
@@ -155,7 +157,7 @@ export default class PowerDataTable extends LightningElement {
                 recordFieldData.value = recordFieldData.originalValue;
                 recordFieldData.formattedValue = this.getFormattedValue(recordFieldData);
                 const domElement = this.template.querySelector(`td[data-record-index="${recordIndex}"][data-field-index="${fieldIndex}"]`);
-                domElement.classList.remove(isEditedClass);
+                domElement?.classList.remove(isEditedClass);
             });
         });
         this.trackedChanges = {};
@@ -167,6 +169,27 @@ export default class PowerDataTable extends LightningElement {
 
     sortByColumn(event) {
         const fieldPath = event.currentTarget.dataset.fieldPath;
+        this.buildQuery(fieldPath);
+        this.setSortIcons(fieldPath);
+    }
+
+    buildQuery(fieldPath) {
+        let item = this.recordsWrapper.sObjectFieldMetadataList.find(item => item.path === fieldPath);
+        const queryString = this.recordsWrapper.queryString;
+        const queryArray = queryString.split(' ');
+        queryArray[queryArray.length - 4] = fieldPath;
+        queryArray[queryArray.length - 3] = item.ascending ? 'DESC' : 'ASC';
+        if (item.ascending) queryArray.splice(queryArray.length - 6, 0, 'WHERE ' + fieldPath + '!=NULL');
+        const newQueryString = queryArray.join(' ');
+        console.log('newQueryString - ', newQueryString);
+        getRecordsFromQuery({ queryString: newQueryString, sObjectFieldMetadataList: this.recordsWrapper.sObjectFieldMetadataList }).then(response => {
+            this.recordsWrapper.records = response.records;
+        }).catch(error => {
+            console.error(error);
+        })
+    }
+
+    setSortIcons(fieldPath) {
         this.recordsWrapper.sObjectFieldMetadataList.forEach(item => {
             if (item.path === fieldPath) {
                 item.isSortedBy = true;
@@ -176,6 +199,5 @@ export default class PowerDataTable extends LightningElement {
                 item.ascending = undefined;
             }
         });
-        console.log(JSON.stringify(this.recordsWrapper.sObjectFieldMetadataList));
     }
 }

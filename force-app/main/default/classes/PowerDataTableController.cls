@@ -1,6 +1,7 @@
 public with sharing class PowerDataTableController {
-    static final String PICKLIST_TYPE = String.valueOf(DisplayType.PICKLIST);
+    static final String PICKLIST_TYPE = 'PICKLIST';
     static final String DEFAULT_SORTED_FIELD = 'CreatedDate';
+    static final String EMPTY_STRING = '';
 
     public class FieldMetadataWrapper {
         @AuraEnabled public String path { get; set; } // Field API name of this field
@@ -19,6 +20,8 @@ public with sharing class PowerDataTableController {
             this.type = type;
             this.required = required;
         }
+
+        public FieldMetadataWrapper() {}
     }
 
     public class DataWrapper {
@@ -37,6 +40,8 @@ public with sharing class PowerDataTableController {
         @AuraEnabled public List<FieldMetadataWrapper> sObjectFieldMetadataList { get; set; }
         @AuraEnabled public List<DataWrapper> records { get; set; }
         @AuraEnabled public Map<String, List<Map<String, String>>> picklistOptions { get; set; }
+        @AuraEnabled public String queryString { get; set; }
+        @AuraEnabled public String sortedBy { get; set; }
     }
 
     @AuraEnabled
@@ -56,6 +61,8 @@ public with sharing class PowerDataTableController {
             myRecordWrapper.sObjectFieldMetadataList = createSObjectMetadataList(fields);
             myRecordWrapper.records = getRecordsWithFieldWrapper(records, myRecordWrapper.sObjectFieldMetadataList);
             myRecordWrapper.picklistOptions = createPicklistOptions(myRecordWrapper.sObjectFieldMetadataList, objectName);
+            myRecordWrapper.queryString = queryString;
+            myRecordWrapper.sortedBy = DEFAULT_SORTED_FIELD;
             return myRecordWrapper;
         } catch (Exception e) {
             throw e;
@@ -67,7 +74,7 @@ public with sharing class PowerDataTableController {
         for (Schema.FieldSetMember fieldSetMember : fields) {
             queryString += ', ' + fieldSetMember.getFieldPath();
         }
-        queryString += ' FROM ' + objectName + ' ORDER BY CreatedDate DESC LIMIT 25';
+        queryString += ' FROM ' + objectName + ' ORDER BY ' + DEFAULT_SORTED_FIELD + ' DESC LIMIT 25';
         return queryString;
     }
 
@@ -104,7 +111,7 @@ public with sharing class PowerDataTableController {
             Map<String, Object> fieldValues = record.getPopulatedFieldsAsMap();
             for (FieldMetadataWrapper header : sObjectFieldMetadataList) {
                 FieldMetadataWrapper fieldData = new FieldMetadataWrapper(header.path, header.label, header.type, header.required);
-                fieldData.value = getValue(fieldValues.get(header.path));
+                fieldData.value = sanitizeValue(fieldValues.get(header.path));
                 fieldData.isPicklist = fieldData.type == PICKLIST_TYPE ? true : false;
                 fieldData.formattedValue = getFormattedValue(fieldData);
                 fieldWrappers.add(fieldData);
@@ -116,11 +123,12 @@ public with sharing class PowerDataTableController {
         return recordsWrapper;
     }
 
-    public static Object getValue(Object obj) {
-        return obj == null ? '' : obj;
+    public static Object sanitizeValue(Object obj) {
+        return obj == null ? EMPTY_STRING : obj;
     }
 
     public static String getFormattedValue(FieldMetadataWrapper fieldData) {
+        if (fieldData.value == EMPTY_STRING) return EMPTY_STRING;
         switch on fieldData.type {
             when 'CURRENCY', 'DECIMAL', 'INTEGER' {
                 return Decimal.valueOf(String.valueOf(fieldData.value)).format();
@@ -140,12 +148,24 @@ public with sharing class PowerDataTableController {
             if (fieldMetada.type == PICKLIST_TYPE) {
                 picklistOptions.put(fieldMetada.path, new List<Map<String, String>>());
                 List<Schema.PicklistEntry> picklistValues = Schema.getGlobalDescribe().get(objectName).getDescribe().fields.getMap().get(fieldMetada.path).getDescribe().getPicklistValues();
-                picklistOptions.get(fieldMetada.path).add(new Map<String, String>{'label'=>'--None--', 'value'=>''});
+                picklistOptions.get(fieldMetada.path).add(new Map<String, String>{'label'=>'--None--', 'value'=>EMPTY_STRING});
                 for(Schema.PicklistEntry pickListVal : picklistValues) {
                     picklistOptions.get(fieldMetada.path).add(new Map<String, String>{'label'=>pickListVal.getLabel(), 'value'=>pickListVal.getValue()});
                 }
             }
         }
         return picklistOptions;
+    }
+
+    @AuraEnabled
+    public static RecordWrapper getRecordsFromQuery(String queryString, List<FieldMetadataWrapper> sObjectFieldMetadataList){
+        try {
+            List<sObject> records = Database.query(queryString);
+            RecordWrapper myRecordWrapper = new RecordWrapper();
+            myRecordWrapper.records = getRecordsWithFieldWrapper(records, sObjectFieldMetadataList);
+            return myRecordWrapper;
+        } catch (Exception e) {
+            throw e;
+        }
     }
 }
