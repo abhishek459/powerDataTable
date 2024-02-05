@@ -45,10 +45,10 @@ export default class PowerDataTable extends LightningElement {
     }
 
     // connectedToInternet = true;
-
-    loading = false;
-    @track recordsWrapper = {};
+    sortingRecords = false;
     picklistOptions = {};
+
+    @track recordsWrapper = {};
     @track trackedChanges = {};
 
     get unsavedChanges() {
@@ -70,7 +70,6 @@ export default class PowerDataTable extends LightningElement {
         if (!this.objectName || !this.fieldsetName) {
             return;
         }
-        this.loading = true;
         fetchRecords({ objectName: 'Account', fieldSetName: 'Account_FieldSet' }).then(response => {
             this.recordsWrapper = response;
             console.log(response);
@@ -168,25 +167,32 @@ export default class PowerDataTable extends LightningElement {
     }
 
     sortByColumn(event) {
+        this.sortingRecords = true;
         const fieldPath = event.currentTarget.dataset.fieldPath;
-        this.buildQuery(fieldPath);
-        this.setSortIcons(fieldPath);
+        this.buildQueryAndFetchRecords(fieldPath);
     }
 
-    buildQuery(fieldPath) {
+    buildQueryAndFetchRecords(fieldPath) {
         let item = this.recordsWrapper.sObjectFieldMetadataList.find(item => item.path === fieldPath);
         const queryString = this.recordsWrapper.queryString;
         const queryArray = queryString.split(' ');
-        queryArray[queryArray.length - 4] = fieldPath;
+        queryArray[queryArray.length - 4] = fieldPath; // Adding the field which the query needs to be sorted by
         queryArray[queryArray.length - 3] = item.ascending ? 'DESC' : 'ASC';
-        if (item.ascending) queryArray.splice(queryArray.length - 6, 0, 'WHERE ' + fieldPath + '!=NULL');
+        if (item.ascending) queryArray.splice(queryArray.length - 6, 0, 'WHERE ' + fieldPath + '!=NULL'); // Adding a conditional WHERE Clause as descending records include NULL values at top
         const newQueryString = queryArray.join(' ');
         console.log('newQueryString - ', newQueryString);
+        this.getRecordsFromQuery(newQueryString, fieldPath);
+    }
+
+    getRecordsFromQuery(newQueryString, fieldPath) {
         getRecordsFromQuery({ queryString: newQueryString, sObjectFieldMetadataList: this.recordsWrapper.sObjectFieldMetadataList }).then(response => {
             this.recordsWrapper.records = response.records;
+            this.setSortIcons(fieldPath);
         }).catch(error => {
             console.error(error);
-        })
+        }).finally(_ => {
+            this.sortingRecords = false;
+        });
     }
 
     setSortIcons(fieldPath) {

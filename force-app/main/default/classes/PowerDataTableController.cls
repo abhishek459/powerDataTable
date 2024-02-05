@@ -124,7 +124,7 @@ public with sharing class PowerDataTableController {
     }
 
     public static Object sanitizeValue(Object obj) {
-        return obj == null ? EMPTY_STRING : obj;
+        return obj == NULL ? EMPTY_STRING : obj;
     }
 
     public static String getFormattedValue(FieldMetadataWrapper fieldData) {

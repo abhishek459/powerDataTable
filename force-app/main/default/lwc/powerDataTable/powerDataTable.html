@@ -1,5 +1,14 @@
 <template>
     <div style="overflow-x: auto;">
+        <template lwc:if={sortingRecords}>
+            <div align="center" class="slds-spinner_container">
+                <div role="status" class="slds-spinner slds-spinner_medium slds-spinner_brand">
+                    <span class="slds-assistive-text">Loading</span>
+                    <div class="slds-spinner__dot-a"></div>
+                    <div class="slds-spinner__dot-b"></div>
+                </div>
+            </div>
+        </template>
         <table class="slds-table slds-table_bordered slds-no-cell-focus slds-table_edit slds-table_resizable-cols">
             <thead>
                 <tr class="slds-line-height_reset">
