@@ -1,5 +1,5 @@
 import { LightningElement, api, track } from 'lwc';
-import fetchRecords from "@salesforce/apex/PowerDataTableController.fetchRecords";
+import fetchRecordsByFieldSet from "@salesforce/apex/PowerDataTableController.fetchRecordsByFieldSet";
 import getRecordsFromQuery from "@salesforce/apex/PowerDataTableController.getRecordsFromQuery";
 
 const dataTypeMapping = {
@@ -70,7 +70,7 @@ export default class PowerDataTable extends LightningElement {
         if (!this.objectName || !this.fieldsetName) {
             return;
         }
-        fetchRecords({ objectName: 'Account', fieldSetName: 'Account_FieldSet' }).then(response => {
+        fetchRecordsByFieldSet({ objectName: 'Account', fieldSetName: 'Account_FieldSet' }).then(response => {
             this.recordsWrapper = response;
             console.log(response);
             this.picklistOptions = this.recordsWrapper.picklistOptions;
@@ -83,7 +83,6 @@ export default class PowerDataTable extends LightningElement {
     enableInlineEdit(event) {
         const recordIndex = event.currentTarget.dataset.recordIndex;
         const fieldIndex = event.currentTarget.dataset.fieldIndex;
-        // const recordId = event.currentTarget.dataset.recordId;
         const fieldType = event.currentTarget.dataset.fieldType;
         const recordData = this.recordsWrapper.records[recordIndex].fieldValues[fieldIndex];
         recordData.inputType = dataTypeMapping[fieldType];
@@ -92,22 +91,18 @@ export default class PowerDataTable extends LightningElement {
     }
 
     saveChangesAndDisableInlineEdit(event) {
-        try {
-            const recordIndex = event.currentTarget.dataset.recordIndex;
-            const fieldIndex = event.currentTarget.dataset.fieldIndex;
-            const recordId = this.recordsWrapper.records[recordIndex].recordId;
-            const value = event.target.value;
+        const recordIndex = event.currentTarget.dataset.recordIndex;
+        const fieldIndex = event.currentTarget.dataset.fieldIndex;
+        const recordId = this.recordsWrapper.records[recordIndex].recordId;
+        const value = event.target.value;
 
-            const recordFieldData = this.recordsWrapper.records[recordIndex].fieldValues[fieldIndex];
-            recordFieldData.originalValue = recordFieldData.originalValue || recordFieldData.value;
-            recordFieldData.value = value;
-            recordFieldData.formattedValue = this.getFormattedValue(recordFieldData);
-            this.updateTrackedChanges(recordIndex, fieldIndex, recordId);
-            recordFieldData.editing = false;
-            console.log(JSON.stringify(this.trackedChanges));
-        } catch (error) {
-            console.error(error);
-        }
+        const recordFieldData = this.recordsWrapper.records[recordIndex].fieldValues[fieldIndex];
+        recordFieldData.originalValue = recordFieldData.originalValue || recordFieldData.value;
+        recordFieldData.value = value;
+        recordFieldData.formattedValue = this.getFormattedValue(recordFieldData);
+        this.updateTrackedChanges(recordIndex, fieldIndex, recordId);
+        recordFieldData.editing = false;
+        console.log(JSON.stringify(this.trackedChanges));
     }
 
     getFormattedValue(recordFieldData) {
@@ -169,7 +164,8 @@ export default class PowerDataTable extends LightningElement {
     sortByColumn(event) {
         this.sortingRecords = true;
         const fieldPath = event.currentTarget.dataset.fieldPath;
-        this.buildQueryAndFetchRecords(fieldPath);
+        const queryString = this.buildQueryAndFetchRecords(fieldPath);
+        this.getRecordsFromQuery(queryString, fieldPath);
     }
 
     buildQueryAndFetchRecords(fieldPath) {
@@ -181,7 +177,7 @@ export default class PowerDataTable extends LightningElement {
         if (item.ascending) queryArray.splice(queryArray.length - 6, 0, 'WHERE ' + fieldPath + '!=NULL'); // Adding a conditional WHERE Clause as descending records include NULL values at top
         const newQueryString = queryArray.join(' ');
         console.log('newQueryString - ', newQueryString);
-        this.getRecordsFromQuery(newQueryString, fieldPath);
+        return newQueryString;
     }
 
     getRecordsFromQuery(newQueryString, fieldPath) {

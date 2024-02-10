@@ -45,7 +45,7 @@ public with sharing class PowerDataTableController {
     }
 
     @AuraEnabled
-    public static RecordWrapper fetchRecords(String objectName, String fieldSetName) {
+    public static RecordWrapper fetchRecordsByFieldSet(String objectName, String fieldSetName) {
         try {
             Schema.FieldSet fieldSet = Schema.getGlobalDescribe().get(objectName).getDescribe().fieldSets.getMap().get(fieldSetName);
             if (fieldSet == NULL) {
@@ -134,7 +134,8 @@ public with sharing class PowerDataTableController {
                 return Decimal.valueOf(String.valueOf(fieldData.value)).format();
             }
             when 'DATETIME' {
-                return DateTime.valueOf(String.valueOf(fieldData.value)).format('dd-MMM-yy, hh:mm a');
+                String timeZone = UserInfo.getTimeZone().getDisplayName();
+                return DateTime.valueOf(String.valueOf(fieldData.value)).format('dd-MMM-yy, hh:mm a', timeZone);
             }
             when else {
                 return String.valueOf(fieldData.value);
