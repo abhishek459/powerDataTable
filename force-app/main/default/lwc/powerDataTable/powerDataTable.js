@@ -88,6 +88,15 @@ export default class PowerDataTable extends LightningElement {
         recordData.inputType = dataTypeMapping[fieldType];
         recordData.picklistOptions = this.picklistOptions[recordData.path];
         recordData.editing = true;
+        this.focusInputField(recordIndex, fieldIndex);
+    }
+
+    focusInputField(recordIndex, fieldIndex) {
+        setTimeout(() => {
+            const domElement = this.template.querySelector(`lightning-input[data-record-index="${recordIndex}"][data-field-index="${fieldIndex}"]`);
+            if (domElement)
+                domElement.focus();
+        }, 40);
     }
 
     saveChangesAndDisableInlineEdit(event) {
