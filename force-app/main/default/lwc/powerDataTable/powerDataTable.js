@@ -166,10 +166,6 @@ export default class PowerDataTable extends LightningElement {
         this.trackedChanges = {};
     }
 
-    fetchFocus(event) {
-        event.target.focus();
-    }
-
     sortByColumn(event) {
         this.sortingRecords = true;
         const fieldPath = event.currentTarget.dataset.fieldPath;

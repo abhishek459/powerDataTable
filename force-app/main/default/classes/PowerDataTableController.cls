@@ -9,7 +9,6 @@ public with sharing class PowerDataTableController {
         @AuraEnabled public String type { get; set; } // Data type of this field value
         @AuraEnabled public Object value { get; set; } // Value attribute stored for this field in record
         @AuraEnabled public Boolean required { get; set; } // Whether this field is required or not when saving
-        @AuraEnabled public Boolean isPicklist { get; set; } // Whether this field is a picklist type
         @AuraEnabled public Boolean isSortedBy { get; set; } // Whether is field is used for sorting
         @AuraEnabled public Boolean ascending { get; set; } // Sorting order is ascending or descending
         @AuraEnabled public String formattedValue { get; set; } // Formatted value in current locale
@@ -24,28 +23,28 @@ public with sharing class PowerDataTableController {
         public FieldMetadataWrapper() {}
     }
 
-    public class DataWrapper {
+    public class RecordDataWrapper {
         @AuraEnabled public String recordId { get; set; }
         @AuraEnabled public List<FieldMetadataWrapper> fieldValues { get; set; }
         @AuraEnabled public Integer srNo { get; set; }
         
-        public DataWrapper(String recordId, List<FieldMetadataWrapper> fieldValues, Integer srNo) {
+        public RecordDataWrapper(String recordId, List<FieldMetadataWrapper> fieldValues, Integer srNo) {
             this.recordId = recordId;
             this.fieldValues = fieldValues;
             this.srNo = srNo;
         }
     }
 
-    public class RecordWrapper {
+    public class DataWrapper {
         @AuraEnabled public List<FieldMetadataWrapper> sObjectFieldMetadataList { get; set; }
-        @AuraEnabled public List<DataWrapper> records { get; set; }
+        @AuraEnabled public List<RecordDataWrapper> records { get; set; }
         @AuraEnabled public Map<String, List<Map<String, String>>> picklistOptions { get; set; }
         @AuraEnabled public String queryString { get; set; }
         @AuraEnabled public String sortedBy { get; set; }
     }
 
     @AuraEnabled
-    public static RecordWrapper fetchRecordsByFieldSet(String objectName, String fieldSetName) {
+    public static DataWrapper fetchRecordsByFieldSet(String objectName, String fieldSetName) {
         try {
             Schema.FieldSet fieldSet = Schema.getGlobalDescribe().get(objectName).getDescribe().fieldSets.getMap().get(fieldSetName);
             if (fieldSet == NULL) {
@@ -57,13 +56,13 @@ public with sharing class PowerDataTableController {
 
             List<sObject> records = Database.Query(queryString);
 
-            RecordWrapper myRecordWrapper = new RecordWrapper();
-            myRecordWrapper.sObjectFieldMetadataList = createSObjectMetadataList(fields);
-            myRecordWrapper.records = getRecordsWithFieldWrapper(records, myRecordWrapper.sObjectFieldMetadataList);
-            myRecordWrapper.picklistOptions = createPicklistOptions(myRecordWrapper.sObjectFieldMetadataList, objectName);
-            myRecordWrapper.queryString = queryString;
-            myRecordWrapper.sortedBy = DEFAULT_SORTED_FIELD;
-            return myRecordWrapper;
+            DataWrapper myDataWrapper = new DataWrapper();
+            myDataWrapper.sObjectFieldMetadataList = createSObjectMetadataList(fields);
+            myDataWrapper.records = getRecordsWithFieldWrapper(records, myDataWrapper.sObjectFieldMetadataList);
+            myDataWrapper.picklistOptions = createPicklistOptions(myDataWrapper.sObjectFieldMetadataList, objectName);
+            myDataWrapper.queryString = queryString;
+            myDataWrapper.sortedBy = DEFAULT_SORTED_FIELD;
+            return myDataWrapper;
         } catch (Exception e) {
             throw e;
         }
@@ -103,8 +102,8 @@ public with sharing class PowerDataTableController {
         return header;
     }
 
-    public static List<DataWrapper> getRecordsWithFieldWrapper(List<sObject> records, List<FieldMetadataWrapper> sObjectFieldMetadataList) {
-        List<DataWrapper> recordsWrapper = new List<DataWrapper>();
+    public static List<RecordDataWrapper> getRecordsWithFieldWrapper(List<sObject> records, List<FieldMetadataWrapper> sObjectFieldMetadataList) {
+        List<RecordDataWrapper> recordsWrapper = new List<RecordDataWrapper>();
         Integer counter = 1;
         for (sObject record : records) {
             List<FieldMetadataWrapper> fieldWrappers = new List<FieldMetadataWrapper>();
@@ -112,11 +111,10 @@ public with sharing class PowerDataTableController {
             for (FieldMetadataWrapper header : sObjectFieldMetadataList) {
                 FieldMetadataWrapper fieldData = new FieldMetadataWrapper(header.path, header.label, header.type, header.required);
                 fieldData.value = sanitizeValue(fieldValues.get(header.path));
-                fieldData.isPicklist = fieldData.type == PICKLIST_TYPE ? true : false;
                 fieldData.formattedValue = getFormattedValue(fieldData);
                 fieldWrappers.add(fieldData);
             }
-            DataWrapper recordData = new DataWrapper(String.valueOf(record.get('Id')), fieldWrappers, counter);
+            RecordDataWrapper recordData = new RecordDataWrapper(String.valueOf(record.get('Id')), fieldWrappers, counter);
             recordsWrapper.add(recordData);
             counter += 1;
         }
@@ -159,12 +157,12 @@ public with sharing class PowerDataTableController {
     }
 
     @AuraEnabled
-    public static RecordWrapper getRecordsFromQuery(String queryString, List<FieldMetadataWrapper> sObjectFieldMetadataList){
+    public static DataWrapper getRecordsFromQuery(String queryString, List<FieldMetadataWrapper> sObjectFieldMetadataList){
         try {
             List<sObject> records = Database.query(queryString);
-            RecordWrapper myRecordWrapper = new RecordWrapper();
-            myRecordWrapper.records = getRecordsWithFieldWrapper(records, sObjectFieldMetadataList);
-            return myRecordWrapper;
+            DataWrapper myDataWrapper = new DataWrapper();
+            myDataWrapper.records = getRecordsWithFieldWrapper(records, sObjectFieldMetadataList);
+            return myDataWrapper;
         } catch (Exception e) {
             throw e;
         }

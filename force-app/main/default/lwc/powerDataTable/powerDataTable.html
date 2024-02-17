@@ -67,9 +67,9 @@
                                         <div class="slds-popover__body">
                                             <template lwc:if={field.picklistOptions}>
                                                 <lightning-combobox variant="label-hidden" value={field.value}
-                                                    options={field.picklistOptions} onmouseenter={fetchFocus}
-                                                    data-record-index={recordIndex} data-field-index={fieldIndex}
-                                                    required={field.required} onblur={saveChangesAndDisableInlineEdit}>
+                                                    options={field.picklistOptions} data-record-index={recordIndex}
+                                                    data-field-index={fieldIndex} required={field.required}
+                                                    onblur={saveChangesAndDisableInlineEdit}>
                                                 </lightning-combobox>
                                             </template>
                                             <template lwc:else>
