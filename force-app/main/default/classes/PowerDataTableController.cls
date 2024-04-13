@@ -3,6 +3,20 @@ public with sharing class PowerDataTableController {
     static final String DEFAULT_SORTED_FIELD = 'CreatedDate';
     static final String EMPTY_STRING = '';
 
+    public class HeaderWrapper {
+        @AuraEnabled public String path { get; set; } // Field API name of this field
+        @AuraEnabled public String label { get; set; } // Label of this field
+        @AuraEnabled public String type { get; set; } // Data type of this field value
+        @AuraEnabled public Boolean required { get; set; } // Whether this field is required or not when saving
+
+        public HeaderWrapper(String path, String label, String type, Boolean required) {
+            this.path = path;
+            this.label = label;
+            this.type = type;
+            this.required = required;
+        }        
+    }
+
     public class FieldMetadataWrapper {
         @AuraEnabled public String path { get; set; } // Field API name of this field
         @AuraEnabled public String label { get; set; } // Label of this field
@@ -68,6 +82,7 @@ public with sharing class PowerDataTableController {
         }
     }
 
+    // Iterate the field set members to build SOQL query
     public static String createQueryString(List<Schema.FieldSetMember> fields, String objectName) {
         String queryString = 'SELECT Id';
         for (Schema.FieldSetMember fieldSetMember : fields) {
@@ -77,6 +92,7 @@ public with sharing class PowerDataTableController {
         return queryString;
     }
 
+    // Creates table header data
     public static List<FieldMetadataWrapper> createSObjectMetadataList(List<Schema.FieldSetMember> fields) {
         List<FieldMetadataWrapper> sObjectFieldMetadataList = new List<FieldMetadataWrapper>();
         for (Schema.FieldSetMember fieldSetMember : fields) {
