@@ -148,8 +148,7 @@ public with sharing class PowerDataTableController {
                 return Decimal.valueOf(String.valueOf(fieldData.value)).format();
             }
             when 'DATETIME' {
-                String timeZone = UserInfo.getTimeZone().getDisplayName();
-                return DateTime.valueOf(String.valueOf(fieldData.value)).format('dd-MMM-yy, hh:mm a', timeZone);
+                return DateTime.valueOf(fieldData.value).format('dd-MMM-yy, hh:mm a');
             }
             when else {
                 return String.valueOf(fieldData.value);
