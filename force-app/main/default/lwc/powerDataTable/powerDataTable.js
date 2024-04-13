@@ -14,7 +14,7 @@ const dateTimeFormatter = new Intl.DateTimeFormat('en-IN', {
     year: '2-digit',
     month: 'short',
     day: '2-digit',
-    hour: 'numeric',
+    hour: '2-digit',
     minute: '2-digit',
     hour12: true
 });
@@ -88,14 +88,31 @@ export default class PowerDataTable extends LightningElement {
         recordData.inputType = dataTypeMapping[fieldType];
         recordData.picklistOptions = this.picklistOptions[recordData.path];
         recordData.editing = true;
-        this.focusInputField(recordIndex, fieldIndex);
+        this.focusInputField(recordIndex, fieldIndex, recordData.type);
     }
 
-    focusInputField(recordIndex, fieldIndex) {
+    focusInputField(recordIndex, fieldIndex, type) {
         setTimeout(() => {
-            const domElement = this.template.querySelector(`lightning-input[data-record-index="${recordIndex}"][data-field-index="${fieldIndex}"]`);
-            if (domElement)
-                domElement.focus();
+            console.log('Got type - ', type);
+            switch (type) {
+                case 'STRING':
+                case 'INTEGER':
+                case 'DECIMAL':
+                case 'CURRENCY':
+                case 'DATETIME':
+                case 'DATE':
+                    const lightningInputElement = this.template.querySelector(`lightning-input[data-record-index="${recordIndex}"][data-field-index="${fieldIndex}"]`);
+                    if (lightningInputElement)
+                        lightningInputElement.focus();
+                    break;
+                case 'PICKLIST':
+                    const lightningComboboxElement = this.template.querySelector(`lightning-combobox[data-record-index="${recordIndex}"][data-field-index="${fieldIndex}"]`);
+                    if (lightningComboboxElement)
+                        lightningComboboxElement.focus();
+                    break;
+                default:
+                    break;
+            }
         }, 40);
     }
 
@@ -206,5 +223,9 @@ export default class PowerDataTable extends LightningElement {
                 item.ascending = undefined;
             }
         });
+    }
+
+    saveChanges() {
+
     }
 }
