@@ -55,6 +55,7 @@ public with sharing class PowerDataTableController {
         @AuraEnabled public Map<String, List<Map<String, String>>> picklistOptions { get; set; }
         @AuraEnabled public String queryString { get; set; }
         @AuraEnabled public String sortedBy { get; set; }
+        @AuraEnabled public String sObjectName { get; set; }
     }
 
     @AuraEnabled
@@ -76,6 +77,7 @@ public with sharing class PowerDataTableController {
             myDataWrapper.picklistOptions = createPicklistOptions(myDataWrapper.sObjectFieldMetadataList, objectName);
             myDataWrapper.queryString = queryString;
             myDataWrapper.sortedBy = DEFAULT_SORTED_FIELD;
+            myDataWrapper.sObjectName = objectName;
             return myDataWrapper;
         } catch (Exception e) {
             throw e;

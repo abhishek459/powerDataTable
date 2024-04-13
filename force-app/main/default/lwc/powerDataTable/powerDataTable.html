@@ -41,6 +41,7 @@
                             </a>
                         </th>
                     </template>
+                    <th style="width: 5%;"></th>
                 </tr>
             </thead>
             <tbody>
@@ -83,6 +84,15 @@
                                 </template>
                             </td>
                         </template>
+                        <td>
+                            <lightning-button-menu icon-size="x-small" alternative-text="Show menu"
+                                menu-alignment="auto">
+                                <lightning-menu-item value="Edit" label="Edit" onclick={editRecord}
+                                    data-record-index={recordIndex}></lightning-menu-item>
+                                <lightning-menu-item value="Delete" label="Delete" onclick={deleteRecord}
+                                    data-record-index={recordIndex}></lightning-menu-item>
+                            </lightning-button-menu>
+                        </td>
                     </tr>
                 </template>
             </tbody>

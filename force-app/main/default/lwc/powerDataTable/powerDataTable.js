@@ -1,6 +1,9 @@
 import { LightningElement, api, track } from 'lwc';
 import fetchRecordsByFieldSet from "@salesforce/apex/PowerDataTableController.fetchRecordsByFieldSet";
 import getRecordsFromQuery from "@salesforce/apex/PowerDataTableController.getRecordsFromQuery";
+import { NavigationMixin } from 'lightning/navigation';
+import { deleteRecord } from 'lightning/uiRecordApi';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
 const dataTypeMapping = {
     'STRING': 'text',
@@ -19,7 +22,7 @@ const dateTimeFormatter = new Intl.DateTimeFormat('en-IN', {
     hour12: true
 });
 
-export default class PowerDataTable extends LightningElement {
+export default class PowerDataTable extends NavigationMixin(LightningElement) {
     _fieldSetName;
     @api get fieldsetName() {
         return this._fieldSetName;
@@ -93,7 +96,6 @@ export default class PowerDataTable extends LightningElement {
 
     focusInputField(recordIndex, fieldIndex, type) {
         setTimeout(() => {
-            console.log('Got type - ', type);
             switch (type) {
                 case 'STRING':
                 case 'INTEGER':
@@ -225,7 +227,38 @@ export default class PowerDataTable extends LightningElement {
         });
     }
 
-    saveChanges() {
+    editRecord(event) {
+        const recordIndex = event.target.getAttribute('data-record-index');
+        const recordFieldData = this.recordsWrapper.records[recordIndex];
+        this[NavigationMixin.Navigate]({
+            type: 'standard__recordPage',
+            attributes: {
+                recordId: recordFieldData.recordId,
+                objectApiName: this.recordsWrapper.sObjectName,
+                actionName: 'edit'
+            }
+        });
+    }
 
+    deleteRecord(event) {
+        const recordIndex = event.target.getAttribute('data-record-index');
+        const recordFieldData = this.recordsWrapper.records[recordIndex];
+        deleteRecord(recordFieldData.recordId).then(_ => {
+            this.showToast('Success', 'Record Deleted Successfully', 'success');
+            this.recordsWrapper.records.splice(recordIndex, 1);
+            this.resetSrNo();
+        });
+    }
+
+    resetSrNo() {
+        let counter = 1;
+        this.recordsWrapper.records.forEach(item => {
+            item.srNo = counter++;
+        });
+    }
+
+    showToast(title, message, variant) {
+        const event = new ShowToastEvent({ title, message, variant });
+        this.dispatchEvent(event);
     }
 }
