@@ -1,6 +1,7 @@
 import { LightningElement, api, track } from 'lwc';
 import fetchRecordsByFieldSet from "@salesforce/apex/PowerDataTableController.fetchRecordsByFieldSet";
 import getRecordsFromQuery from "@salesforce/apex/PowerDataTableController.getRecordsFromQuery";
+import saveChanges from "@salesforce/apex/PowerDataTableController.saveChanges";
 import { NavigationMixin } from 'lightning/navigation';
 import { deleteRecord } from 'lightning/uiRecordApi';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
@@ -185,8 +186,36 @@ export default class PowerDataTable extends NavigationMixin(LightningElement) {
         this.trackedChanges = {};
     }
 
+    saveChanges() {
+        console.log(JSON.stringify(this.trackedChanges));
+        const recordsToBeSaved = [];
+        Object.keys(this.trackedChanges).forEach(recordId => {
+            const record = { Id: recordId };
+            Object.keys(this.trackedChanges[recordId]).forEach(fieldApi => {
+                record[fieldApi] = this.trackedChanges[recordId][fieldApi].value;
+            });
+            recordsToBeSaved.push(record);
+        });
+        saveChanges({ records: recordsToBeSaved }).then(_ => {
+            this.showToast('Success', 'Changes have been saved!', 'success');
+            Object.keys(this.trackedChanges).forEach(recordId => {
+                Object.keys(this.trackedChanges[recordId]).forEach(fieldApi => {
+                    const recordIndex = this.trackedChanges[recordId][fieldApi].recordIndex;
+                    const fieldIndex = this.trackedChanges[recordId][fieldApi].fieldIndex;
+                    const recordFieldData = this.recordsWrapper.records[recordIndex].fieldValues[fieldIndex];
+                    recordFieldData.originalValue = recordFieldData.value;
+                    recordFieldData.formattedValue = this.getFormattedValue(recordFieldData);
+                    const domElement = this.template.querySelector(`td[data-record-index="${recordIndex}"][data-field-index="${fieldIndex}"]`);
+                    domElement?.classList.remove(isEditedClass);
+                });
+            });
+            this.trackedChanges = {};
+        });
+    }
+
     sortByColumn(event) {
         this.sortingRecords = true;
+        this.trackedChanges = {};
         const fieldPath = event.currentTarget.dataset.fieldPath;
         const queryString = this.buildQueryAndFetchRecords(fieldPath);
         this.getRecordsFromQuery(queryString, fieldPath);

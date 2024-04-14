@@ -184,4 +184,13 @@ public with sharing class PowerDataTableController {
             throw e;
         }
     }
+
+    @AuraEnabled
+    public static void saveChanges(List<sObject> records) {
+        try {
+            update records;
+        } catch (Exception e) {
+            throw e;
+        }
+    }
 }
